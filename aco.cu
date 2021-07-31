@@ -262,7 +262,7 @@ __global__ void constructSolution(struct ant *antColony_d, curandState *state_d,
 __device__ double probFunctionProduct(int from, int to, double *phero_d, float *heuristic_d){
   double result; 
   result = pow( phero_d[from + to*NODES], ALPHA) * pow(1/(heuristic_d[from + to*NODES]), BETA);
-  if (!isnan(r)){
+  if (!isnan(result)){
   return (double) (( result ));
  }
  else{
