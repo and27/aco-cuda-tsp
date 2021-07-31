@@ -269,7 +269,7 @@ __global__ void atomicUpdate(struct ant *antColony_d, double *phero_d,
       to = antColony_d[ant_id].solution[0];
     }
      atomicAdd(&phero_d[from + to * NODES], Q / antColony_d[ant_id].solutionLen * RHO);
-     atomicAdd(phero_d[from + to * NODES], Q / antColony_d[ant_id].solutionLen * RHO);
+     atomicAdd(&phero_d[from + to * NODES], Q / antColony_d[ant_id].solutionLen * RHO);
   }
 }
 __global__ void constructSolution(struct ant *antColony_d, curandState *state_d,
