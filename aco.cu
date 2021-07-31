@@ -199,7 +199,8 @@ void acoSolve() {
     for (int i = 0; i < ANTS; i++) {
     }
     // Part II (Pheromone update process)
-    int from, to;
+    //the next line is used only when the atomic is not used and the commented code below is used
+    //int from, to;
     // a. pheromone evaporation
     for (int from = 0; from < NODES; from++) {
       for (int to = 0; to < NODES; to++) {
@@ -266,8 +267,8 @@ __global__ void atomicUpdate(struct ant *antColony_d, double *phero_d,
     } else {
       to = antColony_d[ant_id].solution[0];
     }
-    atomicAdd(&phero_d[from][to], Q / antColony_d[ant_id].solutionLen * RHO);
-    atomicAdd(&phero_d[to][from], Q / antColony_d[ant_id].solutionLen * RHO);
+    atomicAdd(*phero_d[from][to], Q / antColony_d[ant_id].solutionLen * RHO);
+    atomicAdd(*phero_d[to][from], Q / antColony_d[ant_id].solutionLen * RHO);
   }
 }
 __global__ void constructSolution(struct ant *antColony_d, curandState *state_d,
