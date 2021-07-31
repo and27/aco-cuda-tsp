@@ -14,10 +14,10 @@
 #define BETA 0.1
 #define RHO 0.1
 #define Q 10
-#define MAX_ITERATIONS 50
+#define MAX_ITERATIONS 10
 
 //Instance constants
-#define NODES 575
+#define NODES 105
 #define DIST 10000
 #define PHERO_INITIAL (1.0/NODES)
 #define TOTAL_DIST (DIST*NODES)
@@ -326,7 +326,7 @@ int main(){
 		}
  
  nodeTSP nodes[NODES];
- constructTSP("a8", nodes);
+ constructTSP("lin105", nodes);
  
  //allocate device memory
  cudaMalloc((void**)&antColony_d, sizeof(antColony));
