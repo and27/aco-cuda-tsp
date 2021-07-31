@@ -326,7 +326,7 @@ int main(){
 		}
  
  nodeTSP nodes[NODES];
- constructTSP("lin105", nodes);
+ constructTSP("a8", nodes);
  
  //allocate device memory
  cudaMalloc((void**)&antColony_d, sizeof(antColony));
