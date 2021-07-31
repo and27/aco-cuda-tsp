@@ -64,6 +64,8 @@ __global__ void restartAnts(struct ant *antColony_d, curandState *state_d,
 __global__ void constructSolution(struct ant *antColony_d, curandState *state_d,
                                   float *heuristic_d, double *phero_d,
                                   int THREADS);
+__global__ void atomicUpdate(struct ant *antColony_d, double *phero_d,
+                             int THREADS);
 __device__ double probFunctionProduct(int from, int to, double *phero_d,
                                       float *heuristic_d);
 __device__ int NextNode(struct ant *antColony_d, int pos, float *heuristic_d,
@@ -189,6 +191,7 @@ void acoSolve() {
     // Part I (Solution construction phase)
     constructSolution<<<BLOCKS, THREADS>>>(antColony_d, state_d, heuristic_d,
                                            phero_d, THREADS);
+
     cudaDeviceSynchronize();
     // Move solution back to Host
     cudaMemcpy(antColony, antColony_d, sizeof(antColony),
@@ -213,26 +216,28 @@ void acoSolve() {
       } // end to for
     }   // end from for
 
-    // b. pheromone deposit
-    for (int ant = 0; ant < ANTS; ant++) {
-      for (int i = 0; i < NODES; i++) {
-        // until the last-1 node
-        if (i < NODES - 1) {
-          from = antColony[ant].solution[i];
-          to = antColony[ant].solution[i + 1];
-        }
-        // the last node goes from its position to the first node
-        else {
-          from = antColony[ant].solution[i];
-          to = antColony[ant].solution[0];
-        }
-        phero[from][to] += (Q / antColony[ant].solutionLen) * RHO;
-        phero[to][from] = phero[from][to];
-      } // end NODES for
-    }   // end ANTS for
-
     cudaMemcpy(phero_d, phero, phero_size, cudaMemcpyHostToDevice);
     cudaMemcpy(bestSol, bestSol_d, sizeof(bestSol), cudaMemcpyDeviceToHost);
+    atomicUpdate<<<BLOCKS, THREADS>>>(antColony_d, phero_d, THREADS);
+
+    // This code will be replaced by atomicUpdate performed in the device
+    // // b. pheromone deposit
+    // for (int ant = 0; ant < ANTS; ant++) {
+    //   for (int i = 0; i < NODES; i++) {
+    //     // until the last-1 node
+    //     if (i < NODES - 1) {
+    //       from = antColony[ant].solution[i];
+    //       to = antColony[ant].solution[i + 1];
+    //     }
+    //     // the last node goes from its position to the first node
+    //     else {
+    //       from = antColony[ant].solution[i];
+    //       to = antColony[ant].solution[0];
+    //     }
+    //     phero[from][to] += (Q / antColony[ant].solutionLen) * RHO;
+    //     phero[to][from] = phero[from][to];
+    //   } // end NODES for
+    // }   // end ANTS for
 
     // traverse all the ants and get
     for (int i = 0; i < ANTS; i++) {
@@ -249,6 +254,22 @@ void acoSolve() {
   printf("%f ", globalBest);
 }
 
+__global__ void atomicUpdate(struct ant *antColony_d, double *phero_d,
+                             int THREADS) {
+
+  int ant_id = THREADS * blockIdx.x + threadIdx.x;
+  int from, to;
+  for (int i = 0; i < NODES; i++) {
+    from = antColony_d[ant_id].solution[i];
+    if (i > NODES - 1) {
+      to = antColony_d[ant_id].solution[i + 1];
+    } else {
+      to = antColony_d[ant_id].solution[0];
+    }
+    atomicAdd(&phero_d[from][to], Q / antColony_d[ant_id].solutionLen * RHO);
+    atomicAdd(&phero_d[to][from], Q / antColony_d[ant_id].solutionLen * RHO);
+  }
+}
 __global__ void constructSolution(struct ant *antColony_d, curandState *state_d,
                                   float *heuristic_d, double *phero_d,
                                   int THREADS) {
@@ -300,7 +321,7 @@ __device__ double probFunctionProduct(int from, int to, double *phero_d,
 __device__ int NextNode(struct ant *antColony_d, int pos, float *heuristic_d,
                         double *phero_d, curandState *state_d) {
   int to, from;
-  double denom = 0.0000001;
+  double denom = 0.00000001;
   from = antColony_d[pos].curNode;
   for (to = 0; to < NODES; to++) {
     if (antColony_d[pos].tabu[to] == 0) {
