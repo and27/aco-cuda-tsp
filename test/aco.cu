@@ -15,10 +15,10 @@
 #define BETA 0.1
 #define RHO 0.1
 #define Q 10
-#define MAX_ITERATIONS 50
+#define MAX_ITERATIONS 5
 
 //problem specific variables
-#define NODES 575
+#define NODES 8
 #define DIST 10000
 #define PHERO_INITIAL (1.0/NODES)
 #define TOTAL_DIST (DIST*NODES)
