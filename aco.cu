@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <curand_kernel.h>
+#include <cuda_runtime.h>
 #include <fstream>
 #include <iostream>
 #include <math.h>
@@ -267,9 +268,8 @@ __global__ void atomicUpdate(struct ant *antColony_d, double *phero_d,
     } else {
       to = antColony_d[ant_id].solution[0];
     }
-    cout << phero_d[from + to * NODES];
     atomicAdd(&phero_d[from + to * NODES], Q / antColony_d[ant_id].solutionLen * RHO);
-    atomicAdd(phero_d[from + to * NODES], 1);
+    atomicAdd(*phero_d[from + to * NODES], Q / antColony_d[ant_id].solutionLen * RHO);
   }
 }
 __global__ void constructSolution(struct ant *antColony_d, curandState *state_d,
