@@ -353,7 +353,7 @@ int main(){
 		}
  
  nodeTSP nodes[NODES];
- constructTSP("rat575", nodes);
+ constructTSP("a8", nodes);
  deviceMemAlloc();
 
 //set curand states
