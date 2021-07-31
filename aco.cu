@@ -268,8 +268,8 @@ __global__ void atomicUpdate(struct ant *antColony_d, double *phero_d,
     } else {
       to = antColony_d[ant_id].solution[0];
     }
-    // atomicAdd(&phero_d[from + to * NODES], Q / antColony_d[ant_id].solutionLen * RHO);
-    // atomicAdd(phero_d[from + to * NODES], Q / antColony_d[ant_id].solutionLen * RHO);
+     atomicAdd(&phero_d[from + to * NODES], Q / antColony_d[ant_id].solutionLen * RHO);
+     atomicAdd(phero_d[from + to * NODES], Q / antColony_d[ant_id].solutionLen * RHO);
   }
 }
 __global__ void constructSolution(struct ant *antColony_d, curandState *state_d,
@@ -358,7 +358,6 @@ __device__ int NextNode(struct ant *antColony_d, int pos, float *heuristic_d,
 }
 
 int main() {
-  cout << __CUDA_ARCH__ <<endl;
   // The next section will handle the execution time record
   float exec_time;
   cudaEvent_t start, stop;
